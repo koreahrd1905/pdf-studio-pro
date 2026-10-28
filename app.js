@@ -10,6 +10,31 @@ if (window.pdfjsLib) {
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdf.worker.min.js';
 }
 
+// Map font family identifiers to robust CSS font-family fallback chains
+function getFontCssFamily(fontKey) {
+  switch (fontKey) {
+    case 'Noto Sans KR':
+      return '"Noto Sans KR", "맑은 고딕", "Malgun Gothic", sans-serif';
+    case 'Nanum Gothic':
+      return '"Nanum Gothic", "맑은 고딕", sans-serif';
+    case 'Nanum Myeongjo':
+      return '"Nanum Myeongjo", "Batang", "바탕", serif';
+    case 'Noto Serif KR':
+      return '"Noto Serif KR", "Batang", "바탕", serif';
+    case 'Gungsuh':
+      return '"Gungsuh", "궁서", "GungsuhChe", serif';
+    case 'Do Hyeon':
+      return '"Do Hyeon", "Pretendard", sans-serif';
+    case 'Black Han Sans':
+      return '"Black Han Sans", "Pretendard", sans-serif';
+    case 'Nanum Pen Script':
+      return '"Nanum Pen Script", cursive, sans-serif';
+    case 'Pretendard':
+    default:
+      return '"Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  }
+}
+
 // Global State
 const state = {
   // Array of loaded source files: { id, name, size, arrayBuffer, pdfDoc, pageCount, pages: [...] }
@@ -154,6 +179,8 @@ const DOM = {
   addEraserOnlyBtn: document.getElementById('addEraserOnlyBtn'),
   eraserOnlyCheckbox: document.getElementById('eraserOnlyCheckbox'),
   textContentGroup: document.getElementById('textContentGroup'),
+  textFontFamilyRow: document.getElementById('textFontFamilyRow'),
+  textFontFamilySelect: document.getElementById('textFontFamilySelect'),
   textTypographyRow: document.getElementById('textTypographyRow'),
   textStyleRow: document.getElementById('textStyleRow'),
   addHeaderPresetBtn: document.getElementById('addHeaderPresetBtn'),
@@ -745,7 +772,8 @@ function drawTextItemsOnCanvas(ctx, canvasWidth, canvasHeight, textItems) {
 
     const fontSize = (item.fontSize || 20) * (canvasWidth / 500);
     const isBold = item.fontWeight === 'bold';
-    ctx.font = `${isBold ? 'bold ' : ''}${fontSize}px "Pretendard", -apple-system, sans-serif`;
+    const fontCss = getFontCssFamily(item.fontFamily);
+    ctx.font = `${isBold ? 'bold ' : ''}${fontSize}px ${fontCss}`;
 
     const lines = item.text.split('\n');
     const lineH = fontSize * 1.35;
@@ -2667,6 +2695,8 @@ function refreshTextOverlays() {
       el.style.padding = `${item.padding || 8}px`;
     } else {
       textSpan.textContent = item.text || '(내용 없음)';
+      textSpan.style.fontFamily = getFontCssFamily(item.fontFamily);
+      el.style.fontFamily = getFontCssFamily(item.fontFamily);
       el.style.fontSize = `${item.fontSize}px`;
       el.style.color = item.color;
       el.style.fontWeight = item.fontWeight === 'bold' ? '700' : '400';
@@ -2944,6 +2974,12 @@ function syncInspectorWithActiveItem() {
   if (DOM.textContentGroup) {
     DOM.textContentGroup.style.display = item.isEraserOnly ? 'none' : 'block';
   }
+  if (DOM.textFontFamilyRow) {
+    DOM.textFontFamilyRow.style.display = item.isEraserOnly ? 'none' : 'flex';
+  }
+  if (DOM.textFontFamilySelect) {
+    DOM.textFontFamilySelect.value = item.fontFamily || 'Pretendard';
+  }
   if (DOM.textTypographyRow) {
     DOM.textTypographyRow.style.display = item.isEraserOnly ? 'none' : 'flex';
   }
@@ -3031,6 +3067,7 @@ function addNewTextItem(preset = {}) {
     yPercent: preset.yPercent !== undefined ? preset.yPercent : 15,
     widthPercent: preset.widthPercent || null,
     heightPercent: preset.heightPercent || null,
+    fontFamily: preset.fontFamily || 'Pretendard',
     fontSize: preset.fontSize || 26,
     color: preset.color || '#1e293b',
     fontWeight: preset.fontWeight || 'bold',
@@ -3143,6 +3180,16 @@ DOM.textInputContent.addEventListener('input', (e) => {
     refreshPageTextList();
   }
 });
+
+if (DOM.textFontFamilySelect) {
+  DOM.textFontFamilySelect.addEventListener('change', (e) => {
+    const item = state.activePageDraftTexts.find(t => t.id === state.activeTextItemId);
+    if (item) {
+      item.fontFamily = e.target.value;
+      refreshTextOverlays();
+    }
+  });
+}
 
 DOM.textFontSizeRange.addEventListener('input', (e) => {
   const item = state.activePageDraftTexts.find(t => t.id === state.activeTextItemId);
@@ -3382,7 +3429,8 @@ function renderTextOverlayToPng(targetPage, pdfWidth, pdfHeight) {
 
       const itemFontSize = (item.fontSize || 20) * scale;
       const itemWeight = item.fontWeight === 'bold' ? 'bold' : 'normal';
-      ctx.font = `${itemWeight} ${itemFontSize}px "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      const fontCss = getFontCssFamily(item.fontFamily);
+      ctx.font = `${itemWeight} ${itemFontSize}px ${fontCss}`;
 
       const lines = item.text.split('\n');
       const lineHeight = itemFontSize * 1.35;

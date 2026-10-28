@@ -9,7 +9,7 @@
   <!-- Pretendard / Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Nanum+Gothic:wght@400;700;800&family=Nanum+Myeongjo:wght@400;700;800&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@400;600;700;900&family=Pretendard:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- Local Vendor Libraries (Instant Offline Loading) -->
   <script src="libs/pdf.min.js"></script>
@@ -516,6 +516,29 @@
             <div class="form-group" id="textContentGroup">
               <label for="textInputContent">글 내용 (제목 / 설명 / 수정할 문구)</label>
               <textarea id="textInputContent" rows="3" placeholder="추가할 제목이나 텍스트를 입력하세요"></textarea>
+            </div>
+
+            <!-- Font Family Selection Row -->
+            <div class="form-row" id="textFontFamilyRow" style="margin-bottom: 0.85rem;">
+              <div class="form-group flex-1">
+                <label for="textFontFamilySelect" style="display: flex; align-items: center; justify-content: space-between;">
+                  <span>글자 폰트 (서체 선택)</span>
+                  <span style="font-size: 0.7rem; color: #0284c7; font-weight: normal;">총 9가지 인기 서체 지원</span>
+                </label>
+                <div class="font-select-wrap">
+                  <select id="textFontFamilySelect" class="form-select font-dropdown">
+                    <option value="Pretendard">프리텐다드 (Pretendard - 기본 모던 고딕)</option>
+                    <option value="Noto Sans KR">본고딕 / 맑은 고딕 (Noto Sans KR - 정석 고딕체)</option>
+                    <option value="Nanum Gothic">나눔고딕 (Nanum Gothic - 깔끔한 고딕체)</option>
+                    <option value="Nanum Myeongjo">나눔명조 (Nanum Myeongjo - 단정한 신문/보고서체)</option>
+                    <option value="Noto Serif KR">본명조 (Noto Serif KR - 품격 있는 명조체)</option>
+                    <option value="Gungsuh">궁서체 (Gungsuh - 전통 격식체)</option>
+                    <option value="Do Hyeon">도현체 (Do Hyeon - 볼드 타이틀체)</option>
+                    <option value="Black Han Sans">블랙한산스 (Black Han Sans - 강렬한 헤드라인)</option>
+                    <option value="Nanum Pen Script">나눔손글씨 (Nanum Pen - 친근한 펜 손글씨)</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div class="form-row" id="textTypographyRow">
