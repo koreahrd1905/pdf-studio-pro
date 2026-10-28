@@ -42,7 +42,7 @@
       </div>
       <div>
         <h1 class="app-title">PDF Studio <span>Pro</span></h1>
-        <p class="app-subtitle">페이지 클릭 순서 변경 · 드래그 분리/순차 결합 · 글쓰기 편집기</p>
+        <p class="app-subtitle">페이지 클릭 · 이동버튼/드래그 결합 · 캡처 붙여넣기(Ctrl+V) · 700% 돋보기</p>
       </div>
     </div>
 
@@ -53,35 +53,60 @@
           <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
           <line x1="12" y1="17" x2="12.01" y2="17"></line>
         </svg>
-        사용 가이드
+        <span class="btn-label-text">사용 가이드</span>
       </button>
 
       <div class="target-summary-pill">
-        <span>선택된 새 페이지: </span>
+        <span class="pill-label">편집창 페이지: </span>
         <strong id="headerTargetCount">0</strong>장
       </div>
 
-      <button id="exportPdfBtn" class="btn btn-primary" disabled title="원하는 PC 폴더를 직접 선택하여 새 PDF로 저장합니다">
+      <button id="headerPrintBtn" class="btn btn-print-action" disabled title="편집창에서 체크한 페이지(미선택 시 전체 페이지)를 프린터로 바로 출력합니다 (Ctrl+P)">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        <span id="headerPrintBtnText">바로 출력</span>
+      </button>
+
+      <button id="exportPdfBtn" class="btn btn-primary" disabled title="원하는 폴더를 선택하거나 새 PDF로 저장합니다">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
           <polyline points="17 21 17 13 7 13 7 21"></polyline>
           <polyline points="7 3 7 8 15 8"></polyline>
         </svg>
-        새 PDF 저장 (폴더 선택)
+        <span>새 PDF 저장</span>
       </button>
     </div>
   </header>
 
-  <!-- Main Work Area (Split View) -->
-  <main class="main-container">
+  <!-- Mobile Responsive Quick Panel Switcher & Transfer Bar -->
+  <nav class="mobile-panel-nav" id="mobilePanelNav">
+    <button type="button" class="mobile-nav-tab active" data-mobile-view="both" id="mobileTabBoth">
+      ↕ 상하 동시보기
+    </button>
+    <button type="button" class="mobile-nav-tab" data-mobile-view="source" id="mobileTabSource">
+      1. 선택창 (<span id="mobileSourceCount">0</span>)
+    </button>
+    <button type="button" class="mobile-nav-move-btn" id="mobileQuickMoveBtn" disabled title="선택한 페이지를 편집창으로 이동">
+      이동 ▶ (<span id="mobileSelectedBadge">0</span>)
+    </button>
+    <button type="button" class="mobile-nav-tab" data-mobile-view="target" id="mobileTabTarget">
+      2. 편집창 (<span id="mobileTargetCount">0</span>)
+    </button>
+  </nav>
+
+  <!-- Main Work Area (Split View with Center Transfer Bridge) -->
+  <main class="main-container" id="mainContainer">
     <!-- LEFT PANEL: Source PDF Upload & Page Selector -->
-    <section class="panel source-panel">
+    <section class="panel source-panel" id="sourceWorkspacePanel">
       <div class="panel-header">
         <div class="panel-title-group">
           <span class="step-num">1</span>
           <div>
-            <h2 class="panel-title">원본 PDF 파일 목록</h2>
-            <p class="panel-desc">여러 PDF를 추가하고 원하는 페이지를 선택하세요</p>
+            <h2 class="panel-title">원본 PDF 파일 선택창</h2>
+            <p class="panel-desc">원하는 페이지를 클릭 선택한 후 <strong>[이동 버튼]</strong>을 누르거나 드래그하세요</p>
           </div>
         </div>
 
@@ -90,7 +115,7 @@
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 5v14M5 12h14"/>
             </svg>
-            PDF 파일 추가 (다중 선택 가능)
+            <span>PDF 파일 추가</span>
           </label>
           <input type="file" id="pdfFileInput" accept="application/pdf" multiple style="display:none;">
         </div>
@@ -105,7 +130,7 @@
           <line x1="9" y1="15" x2="12" y2="12"></line>
           <line x1="15" y1="15" x2="12" y2="12"></line>
         </svg>
-        <p class="dropzone-text"><strong>이곳에 PDF 파일을 끌어다 놓거나</strong> 상단 버튼으로 추가하세요</p>
+        <p class="dropzone-text"><strong>이곳에 PDF 파일을 끌어다 놓거나</strong> 터치/클릭하여 추가하세요</p>
         <p class="dropzone-sub">파일1, 파일2, 파일3 등 필요한 만큼 다중 등록 가능합니다</p>
       </div>
 
@@ -127,11 +152,9 @@
         <div class="subtoolbar-right">
           <button id="selectAllPagesBtn" class="btn btn-outline btn-xs">전체 선택</button>
           <button id="deselectAllPagesBtn" class="btn btn-outline btn-xs">선택 해제</button>
-          <button id="addSelectedToTargetBtn" class="btn btn-accent btn-xs" disabled>
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-            선택 페이지 편집창으로 추가
+          <button id="addSelectedToTargetBtn" class="btn btn-move-highlight btn-xs" disabled title="선택한 페이지를 우측 편집창으로 이동합니다">
+            <span>이동 ▶</span>
+            <span id="subtoolbarMoveBadge" class="move-count-pill">0</span>
           </button>
         </div>
       </div>
@@ -155,6 +178,22 @@
         </div>
       </div>
 
+      <!-- Sticky Bottom Move Action Bar (Prominent Move Button for Selected Pages) -->
+      <div class="source-bottom-move-bar" id="sourceBottomMoveBar" style="display: none;">
+        <div class="source-move-bar-info">
+          <span class="move-bar-dot"></span>
+          <span>선택된 페이지: <strong id="bottomSelectedCount">0</strong>장</span>
+        </div>
+        <div class="source-move-bar-actions">
+          <button type="button" id="bottomMoveAllBtn" class="btn btn-outline btn-sm" title="현재 파일의 모든 페이지를 편집창으로 이동">
+            전체 이동 ⏩
+          </button>
+          <button type="button" id="bottomMoveSelectedBtn" class="btn btn-move-primary btn-sm" disabled title="클릭하여 선택한 페이지를 우측 편집창으로 바로 옮깁니다">
+            <span>선택 페이지 편집창으로 이동 ▶</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Bottom Tip -->
       <div class="panel-footer-tip">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
@@ -162,9 +201,23 @@
           <line x1="12" y1="16" x2="12" y2="12"></line>
           <line x1="12" y1="8" x2="12.01" y2="8"></line>
         </svg>
-        <span>팁: 페이지 카드 위로 마우스를 올리면 <strong>400% 크기로 시원하게 확대 미리보기</strong>됩니다.</span>
+        <span>원하는 페이지를 클릭한 뒤 <strong>[이동 ▶] 버튼</strong>을 누르면 우측 편집창으로 즉시 옮겨집니다.</span>
       </div>
     </section>
+
+    <!-- CENTER TRANSFER BRIDGE: Dedicated "이동버튼" Column between Left and Right Panels -->
+    <div class="transfer-bridge" id="centerTransferBridge">
+      <div class="transfer-bridge-inner">
+        <button type="button" id="bridgeMoveSelectedBtn" class="bridge-move-btn" disabled title="좌측에서 클릭 선택한 페이지를 우측 편집창으로 옮깁니다">
+          <span class="bridge-btn-icon">▶</span>
+          <span class="bridge-btn-text">이동</span>
+          <span class="bridge-btn-badge" id="bridgeSelectedCountBadge">0장</span>
+        </button>
+        <button type="button" id="bridgeMoveAllBtn" class="bridge-move-all-btn" disabled title="현재 파일의 전체 페이지를 우측 편집창으로 모두 옮깁니다">
+          <span>전체<br>이동 ⏩</span>
+        </button>
+      </div>
+    </div>
 
     <!-- RIGHT PANEL: New Target Document Workspace -->
     <section class="panel target-panel" id="targetWorkspacePanel">
@@ -173,11 +226,20 @@
           <span class="step-num step-accent">2</span>
           <div>
             <h2 class="panel-title">새로운 PDF 편집창 (작업대)</h2>
-            <p class="panel-desc">옮겨진 페이지들이 순서대로 붙으며, 글쓰기/제목을 추가할 수 있습니다</p>
+            <p class="panel-desc">페이지 결합 · <strong>캡처 붙여넣기(Ctrl+V)</strong> · <strong>700% 돋보기</strong> · 글쓰기</p>
           </div>
         </div>
 
         <div class="target-toolbar-actions">
+          <!-- Clipboard Screenshot Paste Button (Ctrl+V & Mobile Tap) -->
+          <button type="button" id="pasteClipboardBtn" class="btn btn-paste-action btn-sm" title="캡처한 화면(Ctrl+V)이나 이미지를 편집창 페이지로 바로 붙여넣습니다">
+            <span>📋 캡처 붙여넣기 (Ctrl+V)</span>
+          </button>
+          <button type="button" id="uploadImageToTargetBtn" class="btn btn-outline btn-sm" title="휴대폰 갤러리/PC의 캡처 이미지 파일을 선택하여 추가합니다">
+            <span>🖼️ 이미지 추가</span>
+          </button>
+          <input type="file" id="pasteImageFileInput" accept="image/*" multiple style="display:none;">
+
           <!-- Undo / Redo History Controls -->
           <div class="history-group">
             <button id="undoBtn" class="btn btn-outline btn-sm" disabled title="되돌리기 (Ctrl+Z)">
@@ -185,32 +247,37 @@
                 <path d="M3 10h10a5 5 0 0 1 5 5v2"></path>
                 <polyline points="7 14 3 10 7 6"></polyline>
               </svg>
-              되돌리기
+              <span class="btn-label-text">되돌리기</span>
             </button>
             <button id="redoBtn" class="btn btn-outline btn-sm" disabled title="다시실행 (Ctrl+Y)">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21 10H11a5 5 0 0 0-5 5v2"></path>
                 <polyline points="17 14 21 10 17 6"></polyline>
               </svg>
-              다시실행
+              <span class="btn-label-text">다시실행</span>
             </button>
           </div>
 
-          <span id="targetSelectionCount" class="selection-status" style="display: none;">0개 선택됨</span>
-          <button id="deselectTargetBtn" class="btn btn-outline btn-xs" style="display: none;">선택 해제</button>
+          <span id="targetSelectionCount" class="selection-status" style="display: none;">0개 체크됨</span>
+          <button id="selectAllTargetBtn" class="btn btn-outline btn-xs" disabled title="편집창의 모든 페이지를 한 번에 체크합니다">전체 체크</button>
+          <button id="deselectTargetBtn" class="btn btn-outline btn-xs" style="display: none;">체크 해제</button>
+          <button id="printTargetBtn" class="btn btn-print-action btn-sm" disabled title="체크한 페이지가 있으면 체크된 페이지들을 모두 출력하고, 없으면 편집창 전체 페이지를 바로 출력합니다">
+            <span>🖨️ <span id="printTargetBtnLabel">바로 출력</span></span>
+          </button>
+          <button id="moveSelectedTargetBtn" class="btn btn-outline btn-xs" style="display: none;" title="선택한 페이지들을 원하는 위치로 이동">선택 위치이동</button>
           <button id="deleteSelectedTargetBtn" class="btn btn-outline-danger btn-xs" style="display: none;">선택 삭제</button>
           <button id="reverseTargetBtn" class="btn btn-outline btn-sm" disabled title="전체 페이지 순서 반전(뒤집기)">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/>
             </svg>
-            순서 반전
+            <span>순서 반전</span>
           </button>
           <button id="clearTargetBtn" class="btn btn-outline-danger btn-sm" disabled title="작업대 모든 페이지 삭제">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="3 6 5 6 21 6"></polyline>
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
             </svg>
-            전체 비우기
+            <span>전체 비우기</span>
           </button>
         </div>
       </div>
@@ -222,7 +289,7 @@
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
           </svg>
-          <span>클릭 또는 <strong>Shift+클릭(여러 장 선택)</strong> 후 <strong>페이지 사이로 드래그</strong>하면 그 사이로 쏙 삽입됩니다.</span>
+          <span>좌측에서 페이지 선택 후 <strong>[이동 ▶] 버튼</strong> 클릭 또는 드래그! 화면 캡처 후 <strong>Ctrl+V</strong>를 누르면 바로 페이지로 추가됩니다.</span>
         </div>
         <div class="banner-item">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
@@ -231,7 +298,7 @@
             <line x1="11" y1="8" x2="11" y2="14"></line>
             <line x1="8" y1="11" x2="14" y2="11"></line>
           </svg>
-          <span>왼쪽 선택창은 커서를 올리면 <strong>400% 확대</strong>되며, 오른쪽 편집창은 <strong>🔍 돋보기 버튼을 클릭하면 300%로 시원하게 확대</strong>됩니다.</span>
+          <span>왼쪽 선택창은 커서를 올리면 <strong>400% 확대</strong>되며, 오른쪽 편집창은 <strong>🔍 돋보기 버튼을 클릭하면 700%로 초대형 확대</strong>됩니다.</span>
         </div>
       </div>
 
@@ -248,7 +315,7 @@
       </div>
 
       <!-- Drop Destination & Page Grid -->
-      <div class="pages-scroll-container target-scroll-container" id="targetDropZone">
+      <div class="pages-scroll-container target-scroll-container" id="targetDropZone" tabindex="0">
         <div id="targetPageGrid" class="page-grid target-page-grid">
           <!-- Target pages dynamically injected here -->
         </div>
@@ -260,17 +327,25 @@
               <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
             </svg>
           </div>
-          <h3>여기로 페이지를 드래그하여 놓으세요</h3>
+          <h3>좌측에서 [이동 ▶] 버튼을 누르거나 여기로 드래그하세요</h3>
           <p>
-            파일1에서 선택한 페이지를 드래그하고, 파일2에서 선택한 페이지를 연속해서 드래그하면<br>
-            <strong>앞서 옮긴 페이지 뒤로 순서가 자연스럽게 이어져 하나의 새로운 PDF가 완성</strong>됩니다.
+            원하는 페이지를 클릭하고 <strong>[이동 ▶] 버튼</strong>을 클릭하거나 마우스로 끌어다 놓으세요.<br>
+            <strong>캡처한 화면(스크린샷)도 이곳에서 바로 Ctrl+V 로 붙여넣어</strong> 새 페이지로 추가할 수 있습니다!
           </p>
+          <div class="empty-dropzone-btns">
+            <button type="button" id="emptyStatePasteBtn" class="btn btn-paste-action btn-sm">
+              📋 캡처한 화면 붙여넣기 (Ctrl+V)
+            </button>
+            <button type="button" id="emptyStateImageUploadBtn" class="btn btn-outline btn-sm">
+              🖼️ 캡처/이미지 파일 불러오기
+            </button>
+          </div>
           <div class="drop-hint-pill">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 14 14"></polyline>
             </svg>
-            편집창 내부에서도 드래그하여 페이지 순서를 자유롭게 바꿀 수 있습니다.
+            편집창 내부에서 ◀ / ▶ 버튼이나 드래그로 순서를 자유롭게 바꿀 수 있습니다.
           </div>
         </div>
       </div>
@@ -285,8 +360,13 @@
           </div>
         </div>
 
-        <div class="target-page-counter">
-          총 <strong id="footerTargetCount">0</strong> 페이지 구성됨
+        <div class="target-footer-right" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <div class="target-page-counter">
+            총 <strong id="footerTargetCount">0</strong> 페이지 구성됨
+          </div>
+          <button type="button" id="footerPrintBtn" class="btn btn-print-action btn-sm" disabled title="체크한 페이지(또는 편집창 전체 페이지)를 프린터로 바로 인쇄합니다">
+            🖨️ <span id="footerPrintBtnText">페이지 바로 출력</span>
+          </button>
         </div>
       </div>
     </section>
@@ -320,11 +400,11 @@
         <!-- Editor Left: Canvas Visual Preview -->
         <div class="editor-preview-column">
           <div class="preview-header">
-            <span>실시간 페이지 미리보기 (텍스트 드래그로 위치 조절)</span>
+            <span>실시간 페이지 미리보기 (드래그로 이동 · 점선 핸들로 크기 조절)</span>
             <div class="preview-header-actions" style="display: flex; align-items: center; gap: 8px;">
               <button id="toggleTextDetectOverlayBtn" class="btn btn-xs btn-outline" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); display: flex; align-items: center; gap: 4px;">
                 <span class="detect-btn-icon">🔍</span>
-                <span id="detectBtnText">원본 글자 감지 모드</span>
+                <span id="detectBtnText">스마트 글자 감지</span>
               </button>
               <span class="badge badge-accent">실시간 반영</span>
             </div>
@@ -332,9 +412,13 @@
           <div class="canvas-viewport" id="canvasViewport">
             <div class="canvas-wrapper" id="canvasWrapper">
               <canvas id="editorPreviewCanvas"></canvas>
-              <!-- Detected Source Text Overlay Layer (Clickable for In-Place Edit) -->
+              <!-- Detected Source Text Overlay Layer (Smart Line-Grouped & Readable) -->
               <div id="detectedTextLayer" class="detected-text-layer" style="display: none;"></div>
-              <!-- Dynamic Draggable Text Overlays -->
+              <!-- Drag-to-Select Area Overlay Layer -->
+              <div id="areaDragSelectionLayer" class="area-drag-selection-layer" style="display: none;">
+                <div id="areaDragRect" class="area-drag-rect" style="display: none;"></div>
+              </div>
+              <!-- Dynamic Draggable & Resizable Text Overlays -->
               <div id="textOverlaysContainer" class="text-overlays-container"></div>
             </div>
           </div>
@@ -346,16 +430,19 @@
           <div class="control-card existing-text-tool-card" style="border-left: 4px solid #0284c7; background: #f0f9ff;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.45rem;">
               <h4 style="margin: 0; color: #0369a1; display: flex; align-items: center; gap: 6px;">
-                <span>✏️</span> 기존 PDF 글씨 수정 / 지우기
+                <span>✏️</span> 스마트 기존 글씨 수정 / 지우기
               </h4>
               <span class="badge" style="background: #0284c7; color: #ffffff;">추천 기능</span>
             </div>
             <p style="font-size: 0.775rem; color: #0369a1; margin-bottom: 0.65rem; line-height: 1.4;">
-              원본 문서의 오타를 감지해 클릭 한 번으로 가리고 고쳐쓰거나, 불필요한 부분을 지웁니다.
+              원본 글자를 문장 단위로 선명하게 감지해 골라 고치거나, 원하는 영역을 드래그해 바로 덮어씁니다.
             </p>
             <div class="preset-btn-group">
               <button id="detectExistingTextBtn" class="btn btn-primary btn-sm" style="flex: 1 1 100%; justify-content: center; gap: 6px;">
-                🔍 원본 글자 감지하여 클릭 수정
+                🔍 스마트 글자 감지 &amp; 목록에서 선택 수정
+              </button>
+              <button id="dragAreaReplaceBtn" class="btn btn-outline btn-sm" style="flex: 1 1 100%; justify-content: center; background: #e0f2fe; color: #0369a1; border-color: #7dd3fc; font-weight: 700;">
+                📐 화면에서 마우스 드래그로 영역 지정해 수정
               </button>
               <button id="addReplacePatchBtn" class="btn btn-outline btn-sm" style="flex: 1; background: #ffffff; color: #0284c7; border-color: #bae6fd;">
                 🩹 화이트아웃 + 새 글씨
@@ -363,6 +450,20 @@
               <button id="addEraserOnlyBtn" class="btn btn-outline-danger btn-sm" style="flex: 1; background: #ffffff;">
                 🧼 영역 지우개 (글자 숨김)
               </button>
+            </div>
+
+            <!-- Smart Detected Text Search & Clickable List Panel -->
+            <div id="smartDetectedListPanel" class="smart-detected-panel" style="display: none;">
+              <div class="smart-detected-header">
+                <span class="smart-detected-title">📋 감지된 문장 목록 (<strong id="detectedListCount">0</strong>개)</span>
+                <span class="smart-detected-hint">클릭하면 즉시 수정됩니다</span>
+              </div>
+              <div class="smart-detected-search-wrap">
+                <input type="text" id="detectedTextSearchInput" placeholder="🔎 수정할 글자 검색 (예: 리더십, 역량, 교육시간...)">
+              </div>
+              <div id="detectedTextQuickList" class="smart-detected-list">
+                <!-- Populated dynamically with readable text items -->
+              </div>
             </div>
           </div>
 
@@ -419,20 +520,45 @@
 
             <div class="form-row" id="textTypographyRow">
               <div class="form-group flex-1">
-                <label for="textFontSizeRange">글자 크기 (px)</label>
-                <div class="range-wrap">
-                  <input type="range" id="textFontSizeRange" min="10" max="64" value="24">
-                  <span id="textFontSizeVal" class="range-num">24px</span>
+                <label for="textFontSizeRange">글자 크기 조정 (삼각형 버튼 클릭)</label>
+                <div class="font-triangle-control-wrap">
+                  <button type="button" id="fontSizeDownBtn" class="btn-font-triangle btn-triangle-down" title="글자 크기 줄이기 (-2px)">
+                    <span class="tri-shape">▼</span>
+                    <span class="tri-label">작게</span>
+                  </button>
+                  <div class="font-size-center-badge">
+                    <span id="textFontSizeVal" class="range-num">24px</span>
+                    <div class="font-mini-triangles">
+                      <button type="button" id="fontSizeStepUpBtn" class="btn-mini-tri" title="+1px 크게">▲</button>
+                      <button type="button" id="fontSizeStepDownBtn" class="btn-mini-tri" title="-1px 작게">▼</button>
+                    </div>
+                  </div>
+                  <button type="button" id="fontSizeUpBtn" class="btn-font-triangle btn-triangle-up" title="글자 크기 키우기 (+2px)">
+                    <span class="tri-shape">▲</span>
+                    <span class="tri-label">크게</span>
+                  </button>
                 </div>
+                <input type="range" id="textFontSizeRange" min="8" max="72" value="24" style="margin-top: 4px; accent-color: var(--primary);">
               </div>
 
-              <div class="form-group flex-1">
+              <div class="form-group" style="min-width: 115px;">
                 <label for="textColorPicker">글자 색상</label>
-                <div class="color-picker-wrap">
+                <div class="color-picker-wrap" style="margin-top: 4px;">
                   <input type="color" id="textColorPicker" value="#1e293b">
                   <span id="textColorHex" class="color-hex-label">#1E293B</span>
                 </div>
               </div>
+            </div>
+
+            <!-- Dashed Box Free Resize Handle Guide & Reset -->
+            <div class="form-row" id="boxResizeGuideRow" style="margin-bottom: 0.85rem; padding: 8px 10px; background: #eff6ff; border: 1px dashed #60a5fa; border-radius: 6px; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 0.76rem; color: #1e40af; font-weight: 600;">
+                <span>↔️↕️</span>
+                <span id="boxSizeStatusText">점선 테두리의 <strong>파란 핸들(8방향)</strong>을 끌어 박스를 자유롭게 늘리고 줄이세요</span>
+              </div>
+              <button type="button" id="resetBoxSizeBtn" class="btn btn-xs btn-outline" style="white-space: nowrap; font-size: 0.7rem; padding: 2px 7px; background: #ffffff; border-color: #93c5fd; color: #1d4ed8;">
+                글자 맞춤 초기화
+              </button>
             </div>
 
             <div class="form-row" id="textStyleRow">
@@ -489,14 +615,19 @@
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button id="cancelModalBtn" class="btn btn-secondary">취소</button>
-        <button id="saveModalBtn" class="btn btn-primary">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          이 페이지에 글쓰기 적용 완료
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button id="printModalPageBtn" class="btn btn-print-action" type="button" title="현재 글쓰기 편집 중인 이 페이지를 즉시 프린터로 출력합니다">
+          🖨️ 현재 편집 페이지 바로 출력
         </button>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <button id="cancelModalBtn" class="btn btn-secondary">취소</button>
+          <button id="saveModalBtn" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            이 페이지에 글쓰기 적용 완료
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -533,22 +664,22 @@
         <div class="guide-step">
           <div class="guide-badge">3</div>
           <div>
-            <strong>드래그 &amp; 드롭으로 새 편집창에 결합</strong>
-            <p>선택한 페이지를 마우스로 끌어서 오른쪽 [새로운 PDF 편집창]으로 놓으세요. 먼저 옮긴 페이지 뒤로 다음 파일의 페이지들이 자동으로 순서대로 착 이어붙습니다.</p>
+            <strong>[이동 ▶] 버튼 클릭 또는 드래그로 편집창에 이동</strong>
+            <p>좌측에서 원하는 페이지를 클릭하여 선택한 뒤 <strong>가운데/하단의 [이동 ▶] 버튼</strong>을 클릭하거나 마우스로 끌어다 놓으세요. 휴대폰에서도 터치로 간편하게 이동됩니다.</p>
           </div>
         </div>
         <div class="guide-step">
           <div class="guide-badge">4</div>
           <div>
-            <strong>제목 및 글쓰기 편집</strong>
-            <p>편집창에 모인 각 페이지의 <strong>[제목/글쓰기]</strong> 버튼을 클릭하여 페이지 상단 제목, 메모, 날짜 등을 원하는 위치에 자유롭게 작성하고 스타일을 지정합니다.</p>
+            <strong>캡처 화면 바로 붙여넣기 (Ctrl+V)</strong>
+            <p>화면 캡처(Win+Shift+S, PrintScreen 등) 후 우측 편집창에서 <strong>Ctrl+V</strong>를 누르거나 <strong>[📋 캡처 붙여넣기]</strong> 버튼을 누르면 캡처 이미지가 새 페이지로 즉시 추가됩니다.</p>
           </div>
         </div>
         <div class="guide-step">
           <div class="guide-badge">5</div>
           <div>
-            <strong>새 PDF 다운로드</strong>
-            <p>우측 상단의 [새 PDF 생성 및 다운로드] 버튼을 누르면 모든 페이지와 작성한 제목이 선명하게 결합된 새 PDF 파일이 즉시 컴퓨터에 저장됩니다.</p>
+            <strong>700% 돋보기 확대 및 제목/글쓰기 편집</strong>
+            <p>편집창 각 페이지의 <strong>🔍 돋보기 버튼</strong>을 누르면 <strong>700% 초대형 고화질</strong>로 확대되며, <strong>[글쓰기]</strong> 버튼으로 제목·메모·지우개 편집 후 새 PDF로 저장할 수 있습니다.</p>
           </div>
         </div>
       </div>
@@ -666,27 +797,39 @@
     </div>
   </div>
 
-  <!-- 300% ZOOM PREVIEW MODAL (Click magnifier button to inspect page) -->
+  <!-- 700% ZOOM PREVIEW MODAL (Click magnifier button to inspect page) -->
   <div id="zoomPreviewModal" class="modal-backdrop zoom-modal-overlay" style="display: none;">
     <div class="zoom-modal-container">
       <div class="zoom-modal-header">
         <div class="zoom-modal-title-wrap">
           <span class="zoom-modal-icon">🔍</span>
-          <strong id="zoomModalTitle">[편집창] 300% 확대 보기</strong>
+          <strong id="zoomModalTitle">[편집창] 700% 확대 보기</strong>
         </div>
         <div class="zoom-modal-header-right">
-          <span id="zoomModalBadge" class="zoom-scale-badge">300% 확대</span>
+          <div class="zoom-level-controls">
+            <button type="button" id="zoomOutBtn" class="zoom-ctrl-btn" title="축소">－</button>
+            <span id="zoomModalBadge" class="zoom-scale-badge">700% 확대</span>
+            <button type="button" id="zoomInBtn" class="zoom-ctrl-btn" title="확대">＋</button>
+            <button type="button" id="zoomReset700Btn" class="zoom-ctrl-btn zoom-preset-btn" title="700% 기본 확대로 복원">700%</button>
+            <button type="button" id="zoomFitBtn" class="zoom-ctrl-btn zoom-preset-btn" title="화면에 맞춤">화면맞춤</button>
+          </div>
           <button id="closeZoomModalBtn" class="btn-close-modal" title="닫기 (ESC)">✕</button>
         </div>
       </div>
-      <div class="zoom-modal-body">
-        <img id="zoomModalImg" src="" alt="300% 확대 미리보기" draggable="false">
+      <div class="zoom-modal-body" id="zoomModalBody">
+        <img id="zoomModalImg" src="" alt="700% 확대 미리보기" draggable="false">
       </div>
       <div class="zoom-modal-footer">
-        <span class="zoom-modal-tip">💡 바깥 어두운 배경을 클릭하거나 ESC 키를 누르면 닫힙니다.</span>
+        <span class="zoom-modal-tip">💡 마우스 휠·드래그 또는 손가락 터치로 스크롤하여 700% 고화질 문서를 확인하세요. (ESC 또는 배경 클릭 시 닫힘)</span>
         <button id="confirmZoomModalBtn" class="btn btn-secondary btn-sm">닫기</button>
       </div>
     </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="appToast" class="app-toast" style="display: none;">
+    <span id="appToastIcon">✅</span>
+    <span id="appToastMsg">알림 메시지</span>
   </div>
 
   <!-- LOADING OVERLAY -->

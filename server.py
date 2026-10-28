@@ -10,9 +10,11 @@ import json
 import os
 import sys
 import io
+import base64
 import urllib.parse
 from pypdf import PdfReader, PdfWriter
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -56,20 +58,36 @@ class PDFStudioHandler(http.server.SimpleHTTPRequestHandler):
                     file_name = page_info.get('fileName')
                     page_num = int(page_info.get('pageNum', 1)) # 1-based
                     text_items = page_info.get('textItems', [])
+                    is_pasted = page_info.get('isPastedImage', False)
+                    pasted_data_url = page_info.get('pastedImageDataUrl')
 
-                    file_path = os.path.join(DIRECTORY, file_name)
-                    if not os.path.exists(file_path):
-                        continue
+                    if is_pasted and pasted_data_url and ',' in pasted_data_url:
+                        pw = float(page_info.get('width', 595.28))
+                        ph = float(page_info.get('height', 841.89))
+                        b64_part = pasted_data_url.split(',', 1)[1]
+                        img_bytes = base64.b64decode(b64_part)
+                        img_packet = io.BytesIO()
+                        img_can = canvas.Canvas(img_packet, pagesize=(pw, ph))
+                        img_reader = ImageReader(io.BytesIO(img_bytes))
+                        img_can.drawImage(img_reader, 0, 0, width=pw, height=ph)
+                        img_can.save()
+                        img_packet.seek(0)
+                        img_pdf = PdfReader(img_packet)
+                        page = img_pdf.pages[0]
+                    else:
+                        file_path = os.path.join(DIRECTORY, file_name)
+                        if not os.path.exists(file_path):
+                            continue
 
-                    if file_path not in reader_cache:
-                        reader_cache[file_path] = PdfReader(file_path)
+                        if file_path not in reader_cache:
+                            reader_cache[file_path] = PdfReader(file_path)
 
-                    reader = reader_cache[file_path]
-                    idx = page_num - 1
-                    if idx < 0 or idx >= len(reader.pages):
-                        continue
+                        reader = reader_cache[file_path]
+                        idx = page_num - 1
+                        if idx < 0 or idx >= len(reader.pages):
+                            continue
 
-                    page = reader.pages[idx]
+                        page = reader.pages[idx]
 
                     # If textItems exist, overlay text using reportlab
                     if text_items:
