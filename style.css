@@ -2544,6 +2544,24 @@ body {
   color: #ffffff;
 }
 
+.btn-source-card-del {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+  line-height: 1.1;
+  transition: all var(--transition-fast);
+}
+.btn-source-card-del:hover {
+  background: #ef4444;
+  color: #ffffff;
+  border-color: #ef4444;
+}
+
 .btn-source-card-move {
   background: #eff6ff;
   border: 1px solid #93c5fd;

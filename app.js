@@ -114,10 +114,12 @@ const DOM = {
   sourceSelectionCount: document.getElementById('sourceSelectionCount'),
   selectAllPagesBtn: document.getElementById('selectAllPagesBtn'),
   deselectAllPagesBtn: document.getElementById('deselectAllPagesBtn'),
+  deleteSelectedSourceBtn: document.getElementById('deleteSelectedSourceBtn'),
   addSelectedToTargetBtn: document.getElementById('addSelectedToTargetBtn'),
   subtoolbarMoveBadge: document.getElementById('subtoolbarMoveBadge'),
   sourceBottomMoveBar: document.getElementById('sourceBottomMoveBar'),
   bottomSelectedCount: document.getElementById('bottomSelectedCount'),
+  bottomDeleteSelectedBtn: document.getElementById('bottomDeleteSelectedBtn'),
   bottomMoveSelectedBtn: document.getElementById('bottomMoveSelectedBtn'),
   bottomMoveAllBtn: document.getElementById('bottomMoveAllBtn'),
   bridgeMoveSelectedBtn: document.getElementById('bridgeMoveSelectedBtn'),
@@ -934,6 +936,7 @@ function renderSourcePages() {
         </span>
         <div class="source-card-actions">
           <button type="button" class="btn-source-zoom" title="크게 확대 보기">🔍</button>
+          <button type="button" class="btn-source-card-del" title="이 페이지 삭제">✕</button>
           <button type="button" class="btn-source-card-move" title="이 페이지를 우측 편집창으로 바로 이동">이동 ▶</button>
         </div>
       </div>
@@ -956,6 +959,16 @@ function renderSourcePages() {
           pageItem.pageNum,
           `<span class="file-color-dot" style="background:${theme.dot}; width:9px; height:9px; border-radius:50%; display:inline-block; margin-right:6px;"></span>[선택창 미리보기] <strong style="color:#38bdf8">[파일 ${theme.fileNum}]</strong> ${activeFile.name} - ${pageItem.pageNum}p`
         );
+      });
+    }
+
+    // 1-Click Delete button on source card
+    const delBtn = card.querySelector('.btn-source-card-del');
+    if (delBtn) {
+      delBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hideHoverPreview();
+        deleteSingleSourcePage(activeFile.id, pageItem.pageNum);
       });
     }
 
@@ -1039,6 +1052,15 @@ function updateSourceSelectionUI() {
   if (DOM.addSelectedToTargetBtn) DOM.addSelectedToTargetBtn.disabled = count === 0;
   if (DOM.subtoolbarMoveBadge) DOM.subtoolbarMoveBadge.textContent = count;
 
+  if (DOM.deleteSelectedSourceBtn) {
+    DOM.deleteSelectedSourceBtn.style.display = count > 0 ? 'inline-block' : 'none';
+    DOM.deleteSelectedSourceBtn.textContent = count > 0 ? `선택 삭제 (${count})` : '선택 삭제';
+  }
+  if (DOM.bottomDeleteSelectedBtn) {
+    DOM.bottomDeleteSelectedBtn.style.display = count > 0 ? 'inline-block' : 'none';
+    DOM.bottomDeleteSelectedBtn.textContent = count > 0 ? `선택 삭제 (${count}장) 🗑️` : '선택 삭제 🗑️';
+  }
+
   if (DOM.bottomSelectedCount) DOM.bottomSelectedCount.textContent = count;
   if (DOM.bottomMoveSelectedBtn) {
     DOM.bottomMoveSelectedBtn.disabled = count === 0;
@@ -1101,6 +1123,62 @@ function moveAllSourcePagesToTarget() {
 
   showToast(`[${activeFile.name}] 전체 ${allPageNums.length}페이지가 우측 편집창으로 이동되었습니다!`, '⏩');
   scrollToNewlyAddedTargetPages();
+}
+
+function deleteSelectedSourcePages() {
+  if (state.selectedSourcePages.size === 0 || !state.activeFileId) {
+    showToast('삭제할 페이지를 먼저 선택해 주세요.', '💡');
+    return;
+  }
+  const activeFile = state.sourceFiles.find(f => f.id === state.activeFileId && !f.isHiddenCaptureStore);
+  if (!activeFile) return;
+
+  const count = state.selectedSourcePages.size;
+  if (!confirm(`선택한 ${count}개 페이지를 목록에서 삭제하시겠습니까?`)) {
+    return;
+  }
+
+  const pagesToDelete = new Set(state.selectedSourcePages);
+  activeFile.pages = activeFile.pages.filter(p => !pagesToDelete.has(p.pageNum));
+  activeFile.pageCount = activeFile.pages.length;
+
+  state.selectedSourcePages.clear();
+  state.lastSelectedSourcePage = null;
+
+  if (activeFile.pages.length === 0) {
+    showToast(`모든 페이지가 삭제되어 [${activeFile.name}] 파일이 닫혔습니다.`, '🗑️');
+    removeSourceFile(activeFile.id);
+  } else {
+    showToast(`선택한 ${count}개 페이지가 삭제되었습니다.`, '🗑️');
+    renderFileTabs();
+    renderSourcePages();
+  }
+}
+
+function deleteSingleSourcePage(fileId, pageNum) {
+  const file = state.sourceFiles.find(f => f.id === fileId);
+  if (!file) return;
+
+  if (!confirm(`${pageNum}페이지를 목록에서 삭제하시겠습니까?`)) {
+    return;
+  }
+
+  file.pages = file.pages.filter(p => p.pageNum !== pageNum);
+  file.pageCount = file.pages.length;
+
+  state.selectedSourcePages.delete(pageNum);
+  if (state.lastSelectedSourcePage === pageNum) {
+    state.lastSelectedSourcePage = null;
+  }
+
+  if (file.pages.length === 0) {
+    showToast(`모든 페이지가 삭제되어 [${file.name}] 파일이 닫혔습니다.`, '🗑️');
+    removeSourceFile(file.id);
+  } else {
+    showToast(`${pageNum}페이지가 삭제되었습니다.`, '🗑️');
+    renderFileTabs();
+    renderSourcePages();
+  }
 }
 
 function scrollToNewlyAddedTargetPages() {
@@ -3991,6 +4069,13 @@ DOM.deselectAllPagesBtn.addEventListener('click', () => {
   updateSourceSelectionUI();
   updateSourcePageCardsDOM();
 });
+
+if (DOM.deleteSelectedSourceBtn) {
+  DOM.deleteSelectedSourceBtn.addEventListener('click', deleteSelectedSourcePages);
+}
+if (DOM.bottomDeleteSelectedBtn) {
+  DOM.bottomDeleteSelectedBtn.addEventListener('click', deleteSelectedSourcePages);
+}
 
 // All Move Buttons (Top Subtoolbar, Bottom Sticky Bar, Center Bridge, Mobile Quick Move)
 if (DOM.addSelectedToTargetBtn) {

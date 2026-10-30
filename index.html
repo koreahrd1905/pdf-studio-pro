@@ -152,6 +152,7 @@
         <div class="subtoolbar-right">
           <button id="selectAllPagesBtn" class="btn btn-outline btn-xs">전체 선택</button>
           <button id="deselectAllPagesBtn" class="btn btn-outline btn-xs">선택 해제</button>
+          <button id="deleteSelectedSourceBtn" class="btn btn-outline-danger btn-xs" style="display: none;" title="선택한 페이지를 이 파일 목록에서 삭제">선택 삭제</button>
           <button id="addSelectedToTargetBtn" class="btn btn-move-highlight btn-xs" disabled title="선택한 페이지를 우측 편집창으로 이동합니다">
             <span>이동 ▶</span>
             <span id="subtoolbarMoveBadge" class="move-count-pill">0</span>
@@ -185,6 +186,9 @@
           <span>선택된 페이지: <strong id="bottomSelectedCount">0</strong>장</span>
         </div>
         <div class="source-move-bar-actions">
+          <button type="button" id="bottomDeleteSelectedBtn" class="btn btn-outline-danger btn-sm" style="display: none;" title="선택한 페이지들을 목록에서 삭제">
+            선택 삭제 🗑️
+          </button>
           <button type="button" id="bottomMoveAllBtn" class="btn btn-outline btn-sm" title="현재 파일의 모든 페이지를 편집창으로 이동">
             전체 이동 ⏩
           </button>
